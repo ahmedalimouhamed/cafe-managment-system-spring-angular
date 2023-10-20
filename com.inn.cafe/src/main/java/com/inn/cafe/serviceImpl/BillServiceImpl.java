@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.pdfbox.io.IOUtils;
 import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -38,10 +39,12 @@ public class BillServiceImpl implements BillService {
     public ResponseEntity<String> generateReport(Map<String, Object> requestMap) {
         log.info("Inside GenerateReport");
         try{
-            String fileName;
             if(validateRequestMap(requestMap)){
+                String fileName;
                 if (requestMap.containsKey("isGenerate") && !(Boolean) requestMap.get("isGenerate")) {
-                    fileName = CafeUtils.getUUID();
+                    log.info("***********************************************");
+                    log.info("is already generated");
+                    fileName = (String) requestMap.get("uuid");
                 }else{
                     fileName = CafeUtils.getUUID();
                     requestMap.put("uuid", fileName);
@@ -92,7 +95,7 @@ public class BillServiceImpl implements BillService {
         table.addCell((String) data.get("name"));
         table.addCell((String) data.get("category"));
         table.addCell((String) data.get("quantity"));
-        table.addCell(Double.toString((double) data.get("price")));
+        table.addCell(Double.toString((Double) data.get("price")));
         table.addCell(Double.toString((Double) data.get("total")));
     }
 
@@ -158,6 +161,9 @@ public class BillServiceImpl implements BillService {
     }
 
     private boolean validateRequestMap(Map<String, Object> requestMap) {
+        //System.out.println();
+        //System.out.println("requestMap");
+        //System.out.println(requestMap);
         return requestMap.containsKey("name")
                 && requestMap.containsKey("contactNumber")
                 && requestMap.containsKey("email")
@@ -177,11 +183,13 @@ public class BillServiceImpl implements BillService {
         return new ResponseEntity<>(list, HttpStatus.OK);
     }
 
+
     @Override
     public ResponseEntity<byte[]> getPdf(Map<String, Object> requestMap) {
         log.info("Inside getPdf : requestMap {}", requestMap);
         try{
             byte[] byteArray = new byte[0];
+
             if(!requestMap.containsKey("uuid") && validateRequestMap(requestMap))
                 return new ResponseEntity<>(byteArray, HttpStatus.BAD_REQUEST);
             String filePath = CafeConstants.STORE_LOCATION+"\\"+(String) requestMap.get("uuid")+".pdf";
@@ -190,7 +198,7 @@ public class BillServiceImpl implements BillService {
                 byteArray = getByteArray(filePath);
                 return new ResponseEntity<>(byteArray, HttpStatus.OK);
             }else{
-                requestMap.put("IsGenerate", false);
+                requestMap.put("isGenerate", false);
                 generateReport(requestMap);
                 byteArray = getByteArray(filePath);
                 return new ResponseEntity<>(byteArray, HttpStatus.OK);

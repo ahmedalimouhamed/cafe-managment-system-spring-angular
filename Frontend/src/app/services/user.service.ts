@@ -22,4 +22,32 @@ export class UserService {
       headers: new HttpHeaders().set('Content-Type', 'application/json')
     })
   }
+
+
+  login(data:any) {
+    return this.httpClient.post(`${this.url}/users/login`, data, {
+      headers: new HttpHeaders().set('Content-Type', 'application/json')
+    })
+  }
+
+  checkToken(){
+    return this.httpClient.get(`${this.url}/users/checkToken`);
+  }
+
+  changePassword(data:any){
+    return this.httpClient.post(`${this.url}/users/changePassword/`, data, {
+      headers: new HttpHeaders().set('Content-Type', 'application/json')
+    })
+  }
+
+  getUsers(){
+    return this.httpClient.get(`${this.url}/users/get`);
+  }
+
+  update(data:any){
+    return this.httpClient.post(`${this.url}/users/update`,data,{
+      headers:new HttpHeaders().set('Content-Type', 'application/json')
+    })
+  }
+
 }
